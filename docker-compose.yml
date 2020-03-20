@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  game:
+    build: .
+    working_dir: /game
+    restart: on-failure
+    volumes:
+      - .:/game:z
+      - /game/node_modules
+    ports:
+      - "8100:8100"
