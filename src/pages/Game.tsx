@@ -75,7 +75,6 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
       currentPlayerID: 0,
       players: ps,
       words: ws,
-      // localStream: undefined,
     };
     this.setPlayer = this.setPlayer.bind(this);
   }
@@ -87,16 +86,15 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
   }
 
   componentDidUpdate(prevProps: Readonly<GameProps>, prevState: Readonly<{ currentPlayerID: number; players: Player[]; words: Word[]; }>) {
-    console.log('componentDidUpdate');
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
-      const localVideo: HTMLVideoElement | null = document.querySelector('video#local');
+      const localVideo: HTMLVideoElement | null = document.querySelector('video#player1');
       if (localVideo) {
           localVideo.srcObject = stream;
       }
+      let peer: Peer;
       if (prevProps.match.params.leader) {
-        console.log('leader');
-        const peer = new Peer(prevProps.match.params.id, {
+        peer = new Peer(prevProps.match.params.id, {
           host: 'peer.couchallenge.de',
           port: 9000,
           path: '/myapp',
@@ -109,42 +107,45 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
 
         peer.on('connection', function(conn) {
           console.log('leader new connection', conn);
-        });
-
-        peer.on('call', (call) => {
-          console.log('leader.call')
-          call.answer(stream); // Answer the call with an A/V stream.
-          call.on('stream', (remoteStream) => {
-            console.log('leader got stream');
-            const remoteVideo: HTMLVideoElement | null = document.querySelector('video#remote');
-            if (remoteVideo) {
-                remoteVideo.srcObject = remoteStream;
-            }
+          conn.on('data', function(data){
+            // Will print 'hi!'
+            console.log(data);
           });
         });
       } else {
         console.log('not leader');
-        const peer = new Peer({
+        peer = new Peer({
           host: 'peer.couchallenge.de',
           port: 9000,
           path: '/myapp',
           key: 'cccccc',
         });
 
-
         peer.on('open', (id) => {
-          console.log('not leader.open');
-          console.log('My peer ID is: ' + id);
           var conn = peer.connect(prevProps.match.params.id);
-          console.log('not leader connection', conn);
           const call = peer.call(prevProps.match.params.id, stream);
           call.on('stream', (remoteStream) => {
-            console.log('not leader got stream');
-            // Show stream in some <video> element.
+              const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
+              if (remoteVideo) {
+                  remoteVideo.srcObject = remoteStream;
+              }
+          });
+          conn.on('data', function(data){
+            console.log(data);
           });
         })
-
       }
+
+      peer.on('call', (call) => {
+        call.answer(stream);
+        call.on('stream', (remoteStream) => {
+          const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
+          if (remoteVideo) {
+              remoteVideo.srcObject = remoteStream;
+          }
+        });
+      });
+
     }, (err) => {
       console.error('Failed to get local stream', err);
     });
@@ -164,8 +165,12 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           <Words words={this.state.words} />
           <Scores players={this.state.players} />
           <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />
-          <video id='local' autoPlay></video>
-          <video id='remote' autoPlay></video>
+          <video id='player1' autoPlay></video>
+          <video id='player2' autoPlay></video>
+          <video id='player3' autoPlay></video>
+          <video id='player4' autoPlay></video>
+          <video id='player5' autoPlay></video>
+          <video id='player6' autoPlay></video>
         </IonContent>
       </IonPage>
     );
