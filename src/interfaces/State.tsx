@@ -1,9 +1,6 @@
-export enum Team {
-  red,
-  blue
-}
-
-export interface Player {
-  id: string;
-  team: Team;
+export enum Role {
+  inactive,
+  explaining,
+  guessing,
+  watching
 }
