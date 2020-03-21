@@ -24,7 +24,7 @@ const CreateGame: React.FC = () => {
   let link: string = `/game/${id}/leader`;
 
   return (
-    <IonButton routerLink={link}>Neues Spiel</IonButton>
+    <IonButton color="primary" expand="full" size="default" routerLink={link}>Neues Spiel</IonButton>
   );
 };
 
