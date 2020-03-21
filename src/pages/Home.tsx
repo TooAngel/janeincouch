@@ -1,6 +1,7 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import React from 'react';
 import CreateGame from '../components/CreateGame';
+import JoinGame from '../components/JoinGame';
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -14,6 +15,7 @@ const Home: React.FC = () => {
       <IonContent>
         <img src="/assets/logo.svg" width="100%" />
         <CreateGame />
+        <JoinGame />
       </IonContent>
     </IonPage>
   );
