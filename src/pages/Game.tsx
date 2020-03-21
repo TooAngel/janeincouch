@@ -1,5 +1,5 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router';
 
 import './Game.css';
@@ -14,9 +14,17 @@ import Players from '../components/Players';
 import Scores from '../components/Scores';
 import Words from '../components/Words';
 
-interface GameProps extends RouteComponentProps<{
+interface Params {
   id: string;
-}> {}
+}
+
+interface Match {
+  params: Params;
+}
+
+interface GameProps {
+  match: Match;
+}
 
 let ps: Player[] = [];
 ps.push({id: "a", team: Team.red, role: Role.explaining, score: 0});
@@ -59,32 +67,41 @@ ws.push({playerID: "f", word: "mond"})
 ws.push({playerID: "f", word: "sonne"})
 ws.push({playerID: "f", word: "sterne"})
 
-const Game: React.FC<GameProps> = ({match}) => {
-  const [currentPlayerID] = useState<number>(0);
-  const [players, setPlayers] = useState<Player[]>(ps);
-  const [words, setWords] = useState<Word[]>(ws);
-
-  const myPlayer = (player: Player) => {
-    console.log(player);
-    players[currentPlayerID] = player;
-    setPlayers(players);
+class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: Word[] }> {
+  constructor(props: GameProps) {
+    super(props);
+    this.state = {
+      currentPlayerID: 0,
+      players: ps,
+      words: ws,
+    };
+    this.myPlayer = this.myPlayer.bind(this);
   }
 
-  return (
-    <IonPage>
+  myPlayer(player: Player) {
+    console.log(player);
+    const players = this.state.players;
+    players[this.state.currentPlayerID] = player;
+    this.setState({players: players});
+  }
+
+  render() {
+    return (
+      <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>GameID {match.params.id}</IonTitle>
-        </IonToolbar>
+      <IonToolbar>
+        <IonTitle>GameID {this.props.match.params.id}</IonTitle>
+      </IonToolbar>
       </IonHeader>
       <IonContent>
-        <Players players={players} />
-        <Words words={words} />
-        <Scores players={players} />
-        <Actions player={players[currentPlayerID]} setPlayer={myPlayer} />
+      <Players players={this.state.players} />
+      <Words words={this.state.words} />
+      <Scores players={this.state.players} />
+      <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.myPlayer} />
       </IonContent>
-    </IonPage>
-  );
+      </IonPage>
+    );
+  }
 };
 
 export default Game;
