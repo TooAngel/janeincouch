@@ -21,7 +21,7 @@ function getRandomID(): string {
 const CreateGame: React.FC = () => {
 
   let id: string = getRandomID()
-  let link: string = "/game/" + id;
+  let link: string = `/game/${id}/leader`;
 
   return (
     <IonButton routerLink={link}>Neues Spiel</IonButton>

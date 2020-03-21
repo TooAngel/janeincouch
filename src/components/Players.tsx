@@ -16,8 +16,6 @@ const Players: React.FC<PlayerProps> = (props) => {
   let blues = [];
   let reds = [];
   for (let player of props.players) {
-    console.log(player.id, player.score);
-
     if (player.role === Role.explaining) {
       active = (
         <IonCol size="12">{player.id} {player.score}</IonCol>
