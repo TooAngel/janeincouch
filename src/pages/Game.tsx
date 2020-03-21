@@ -67,10 +67,9 @@ ws.push({playerID: "f", word: "mond"})
 ws.push({playerID: "f", word: "sonne"})
 ws.push({playerID: "f", word: "sterne"})
 
-class Game extends React.Component<{}, { currentPlayerID: number, players: Player[], words: Word[] }> {
+class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: Word[] }> {
   constructor(props: GameProps) {
     super(props);
-    console.log(props);
     this.state = {
       currentPlayerID: 0,
       players: ps,
@@ -91,7 +90,7 @@ class Game extends React.Component<{}, { currentPlayerID: number, players: Playe
       <IonPage>
       <IonHeader>
       <IonToolbar>
-      <IonTitle>GameID</IonTitle>
+        <IonTitle>GameID {this.props.match.params.id}</IonTitle>
       </IonToolbar>
       </IonHeader>
       <IonContent>
