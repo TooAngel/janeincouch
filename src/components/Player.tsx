@@ -1,6 +1,7 @@
 import React from 'react';
 import { IonCol } from '@ionic/react';
 import { Player as PlayerInterface } from '../interfaces/Player'
+import './Player.css'
 
 interface PlayerProps {
   player: PlayerInterface;
