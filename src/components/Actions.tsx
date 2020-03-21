@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { IonGrid, IonRow, IonCol, IonButton, IonIcon } from '@ionic/react';
+import React from 'react';
+import { IonGrid, IonRow, IonCol, IonButton } from '@ionic/react';
 
 import { Player } from '../interfaces/Player'
 import { Role } from '../interfaces/State'
-import { Team } from '../interfaces/Team'
 
 interface ActionsProps {
   player: Player;
