@@ -13,7 +13,7 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <img src="/assets/logo.svg" width="100%" />
+        <img src="/assets/logo.svg" alt="logo" width="100%" />
         <CreateGame />
         <JoinGame />
       </IonContent>

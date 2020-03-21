@@ -6,4 +6,6 @@ export interface Player {
   team: Team;
   role: Role;
   score: number;
+  peerId: string;
+  srcObject: MediaStream | null;
 }

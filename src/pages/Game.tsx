@@ -28,64 +28,66 @@ interface GameProps {
 }
 
 let ps: Player[] = [];
-ps.push({id: "a", team: Team.red, role: Role.explaining, score: 0});
-ps.push({id: "b", team: Team.red, role: Role.guessing, score: 0});
-ps.push({id: "c", team: Team.red, role: Role.guessing, score: 0});
-ps.push({id: "d", team: Team.blue, role: Role.watching, score: 0});
-ps.push({id: "e", team: Team.blue, role: Role.watching, score: 0});
-ps.push({id: "f", team: Team.blue, role: Role.watching, score: 0});
+// ps.push({id: "a", team: Team.red, role: Role.explaining, score: 0});
+// ps.push({id: "b", team: Team.red, role: Role.guessing, score: 0});
+// ps.push({id: "c", team: Team.red, role: Role.guessing, score: 0});
+// ps.push({id: "d", team: Team.blue, role: Role.watching, score: 0});
+// ps.push({id: "e", team: Team.blue, role: Role.watching, score: 0});
+// ps.push({id: "f", team: Team.blue, role: Role.watching, score: 0});
 
 
 
 let ws: Word[] = [];
 // p1
-ws.push({playerID: "a", word: "hund", active: true})
-ws.push({playerID: "a", word: "katze"})
-ws.push({playerID: "a", word: "mause"})
+// ws.push({playerID: "a", word: "hund", active: true})
+// ws.push({playerID: "a", word: "katze"})
+// ws.push({playerID: "a", word: "mause"})
+//
+// // p2
+// ws.push({playerID: "b", word: "auto"})
+// ws.push({playerID: "b", word: "mopped"})
+// ws.push({playerID: "b", word: "rad"})
+//
+// // p2
+// ws.push({playerID: "c", word: "tisch"})
+// ws.push({playerID: "c", word: "stuhl"})
+// ws.push({playerID: "c", word: "lampe"})
+//
+// // p4
+// ws.push({playerID: "d", word: "baum"})
+// ws.push({playerID: "d", word: "blume"})
+// ws.push({playerID: "d", word: "strauch"})
+//
+// // p5
+// ws.push({playerID: "e", word: "fenster"})
+// ws.push({playerID: "e", word: "tuer"})
+// ws.push({playerID: "e", word: "decke"})
+//
+// // p6
+// ws.push({playerID: "f", word: "mond"})
+// ws.push({playerID: "f", word: "sonne"})
+// ws.push({playerID: "f", word: "sterne"})
 
-// p2
-ws.push({playerID: "b", word: "auto"})
-ws.push({playerID: "b", word: "mopped"})
-ws.push({playerID: "b", word: "rad"})
+enum GameState {
+  Waiting,
+  Playing
+}
 
-// p2
-ws.push({playerID: "c", word: "tisch"})
-ws.push({playerID: "c", word: "stuhl"})
-ws.push({playerID: "c", word: "lampe"})
-
-// p4
-ws.push({playerID: "d", word: "baum"})
-ws.push({playerID: "d", word: "blume"})
-ws.push({playerID: "d", word: "strauch"})
-
-// p5
-ws.push({playerID: "e", word: "fenster"})
-ws.push({playerID: "e", word: "tuer"})
-ws.push({playerID: "e", word: "decke"})
-
-// p6
-ws.push({playerID: "f", word: "mond"})
-ws.push({playerID: "f", word: "sonne"})
-ws.push({playerID: "f", word: "sterne"})
-
-class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: Word[] }> {
+class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: Word[], state: GameState }> {
   constructor(props: GameProps) {
     super(props);
     this.state = {
       currentPlayerID: 0,
       players: ps,
       words: ws,
+      state: GameState.Waiting,
     };
     this.setPlayer = this.setPlayer.bind(this);
+    this.initRTC = this.initRTC.bind(this);
+    this.initRTC();
   }
 
-  setPlayer(player: Player) {
-    const players = this.state.players;
-    players[this.state.currentPlayerID] = player;
-    this.setState({players: players});
-  }
-
-  componentDidUpdate(prevProps: Readonly<GameProps>, prevState: Readonly<{ currentPlayerID: number; players: Player[]; words: Word[]; }>) {
+  initRTC() {
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
       const localVideo: HTMLVideoElement | null = document.querySelector('video#player1');
@@ -93,8 +95,10 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           localVideo.srcObject = stream;
       }
       let peer: Peer;
-      if (prevProps.match.params.leader) {
-        peer = new Peer(prevProps.match.params.id, {
+      if (this.props.match.params.leader) {
+        ps.push({id: `${ps.length}`, team: Team.red, role: Role.explaining, score: 0, peerId: this.props.match.params.id, srcObject:stream});
+        this.setState({players: ps});
+        peer = new Peer(this.props.match.params.id, {
           host: 'peer.couchallenge.de',
           port: 9000,
           path: '/myapp',
@@ -105,11 +109,14 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           console.log('My peer ID is: ' + id);
         })
 
-        peer.on('connection', function(conn) {
+        peer.on('connection', (conn) => {
           console.log('leader new connection', conn);
-          conn.on('data', function(data){
-            // Will print 'hi!'
-            console.log(data);
+          conn.on('data', (data) => {
+            console.log('leader got data', data);
+            const joiner = JSON.parse(data);
+            ps.push({id: `${ps.length}`, team: Team.red, role: Role.explaining, score: 0, peerId: joiner.id, srcObject:stream});
+            this.setState({players: ps});
+            conn.send(JSON.stringify(ps));
           });
         });
       } else {
@@ -122,27 +129,45 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
         });
 
         peer.on('open', (id) => {
-          var conn = peer.connect(prevProps.match.params.id);
-          const call = peer.call(prevProps.match.params.id, stream);
-          call.on('stream', (remoteStream) => {
-              const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
-              if (remoteVideo) {
-                  remoteVideo.srcObject = remoteStream;
+          var conn = peer.connect(this.props.match.params.id);
+          conn.on('open', () => {
+            console.log('leader.open');
+            console.log('My peer ID is: ' + id);
+            conn.send(JSON.stringify({hello: true, id: id}));
+          })
+          conn.on('data', (data) => {
+            console.log('follower got data', data);
+            const players: Player[] = JSON.parse(data);
+            for (const player of players) {
+              if (player.id === id) {
+                player.srcObject = stream;
+                this.setState({players: players});
+                continue;
               }
+              const call = peer.call(player.peerId, stream);
+              call.on('stream', (remoteStream) => {
+                console.log('call out on stream');
+                console.log(remoteStream);
+                player.srcObject = remoteStream;
+                this.setState({players: players});
+                // const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
+                // if (remoteVideo) {
+                //     remoteVideo.srcObject = remoteStream;
+                // }
+              });
+            }
           });
-          conn.on('data', function(data){
-            console.log(data);
-          });
-        })
+        });
       }
 
       peer.on('call', (call) => {
+        console.log('call', call);
         call.answer(stream);
         call.on('stream', (remoteStream) => {
-          const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
-          if (remoteVideo) {
-              remoteVideo.srcObject = remoteStream;
-          }
+          // const remoteVideo: HTMLVideoElement | null = document.querySelector('video#player2');
+          // if (remoteVideo) {
+          //     remoteVideo.srcObject = remoteStream;
+          // }
         });
       });
 
@@ -152,7 +177,21 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
 
   }
 
+  setPlayer(player: Player) {
+    const players = this.state.players;
+    players[this.state.currentPlayerID] = player;
+    this.setState({players: players});
+  }
+
   render() {
+    const components = [];
+    components.push(<Players key="players" players={this.state.players} />)
+    if (this.state.state === GameState.Playing) {
+      components.push(<Words words={this.state.words} />);
+      components.push(<Scores players={this.state.players} />);
+      components.push(<Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />);
+    }
+
     return (
       <IonPage>
         <IonHeader>
@@ -161,16 +200,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          <Players players={this.state.players} />
-          <Words words={this.state.words} />
-          <Scores players={this.state.players} />
-          <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />
-          <video id='player1' autoPlay></video>
-          <video id='player2' autoPlay></video>
-          <video id='player3' autoPlay></video>
-          <video id='player4' autoPlay></video>
-          <video id='player5' autoPlay></video>
-          <video id='player6' autoPlay></video>
+          {components}
         </IonContent>
       </IonPage>
     );
