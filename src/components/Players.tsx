@@ -1,11 +1,13 @@
 import React from 'react';
 import { IonGrid, IonCol, IonRow } from '@ionic/react';
-import { Player } from '../interfaces/Player'
+import { Player as PlayerInterface } from '../interfaces/Player'
 import { Team } from '../interfaces/Team'
 import { Role } from '../interfaces/State'
 
+import Player from '../components/Player';
+
 interface PlayerProps {
-  players: Player[];
+  players: PlayerInterface[];
 }
 
 const Players: React.FC<PlayerProps> = (props) => {
@@ -22,14 +24,11 @@ const Players: React.FC<PlayerProps> = (props) => {
       )
     }
     if (player.team === Team.blue) {
-      blues.push(
-        <IonCol key={player.id} size="4">{player.id} {player.score}</IonCol>
-      )
+      blues.push(<Player key={player.id} player={player} />);
     }
     if (player.team === Team.red) {
-      reds.push(
-        <IonCol key={player.id} size="4">{player.id} {player.score}</IonCol>
-      )
+      console.log(player.id);
+      reds.push(<Player key={player.id} player={player} />);
     }
   }
 
