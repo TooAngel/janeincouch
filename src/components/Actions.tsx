@@ -26,15 +26,15 @@ const Actions: React.FC<ActionsProps> = (props) => {
   let wrong: any;
   if (props.player.role === Role.explaining) {
     right = (
-      <IonButton color="primary" onClick={() => next(true)}>
+      <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => next(true)}>
         Richtig
         &nbsp;
-        <IonIcon icon={checkmarkCircleOutline} />
+        <IonIcon color="light" icon={checkmarkCircleOutline} />
       </IonButton>
     )
     wrong = (
-      <IonButton onClick={() => next(false)}>
-        <IonIcon icon={closeCircleOutline} />
+      <IonButton expand="block" size="large" fill="outline" color="danger" onClick={() => next(false)}>
+        <IonIcon color="danger" icon={closeCircleOutline} />
         &nbsp;
         Weiter
       </IonButton>
