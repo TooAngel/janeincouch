@@ -12,9 +12,6 @@ const Scores: React.FC<ScoresProps> = (props) => {
   let scores: number[] = [0, 0];
   for (let player of props.players) {
     let teamScore = scores[player.team];
-    if (Number.isNaN(teamScore)) {
-      teamScore = 0;
-    }
     scores[player.team] = teamScore + player.score;
   }
 
