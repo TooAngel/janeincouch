@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IonGrid, IonRow, IonCol, IonButton, IonIcon } from '@ionic/react';
+import { closeCircleOutline, checkmarkCircleOutline } from 'ionicons/icons'
 
 import { Player } from '../interfaces/Player'
 import { Role } from '../interfaces/State'
@@ -28,10 +29,14 @@ const Actions: React.FC<ActionsProps> = (props) => {
     right = (
       <IonButton color="primary" onClick={() => next(true)}>
         Richtig
+        &nbsp;
+        <IonIcon icon={checkmarkCircleOutline} />
       </IonButton>
     )
     wrong = (
       <IonButton onClick={() => next(false)}>
+        <IonIcon icon={closeCircleOutline} />
+        &nbsp;
         Weiter
       </IonButton>
     )
