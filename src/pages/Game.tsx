@@ -75,11 +75,10 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
       players: ps,
       words: ws,
     };
-    this.myPlayer = this.myPlayer.bind(this);
+    this.setPlayer = this.setPlayer.bind(this);
   }
 
-  myPlayer(player: Player) {
-    console.log(player);
+  setPlayer(player: Player) {
     const players = this.state.players;
     players[this.state.currentPlayerID] = player;
     this.setState({players: players});
@@ -88,17 +87,17 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
   render() {
     return (
       <IonPage>
-      <IonHeader>
-      <IonToolbar>
-        <IonTitle>GameID {this.props.match.params.id}</IonTitle>
-      </IonToolbar>
-      </IonHeader>
-      <IonContent>
-      <Players players={this.state.players} />
-      <Words words={this.state.words} />
-      <Scores players={this.state.players} />
-      <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.myPlayer} />
-      </IonContent>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>GameID {this.props.match.params.id}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <Players players={this.state.players} />
+          <Words words={this.state.words} />
+          <Scores players={this.state.players} />
+          <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />
+        </IonContent>
       </IonPage>
     );
   }
