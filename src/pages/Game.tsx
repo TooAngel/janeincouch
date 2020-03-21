@@ -164,6 +164,8 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           <Words words={this.state.words} />
           <Scores players={this.state.players} />
           <Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />
+          <video id='local' autoPlay></video>
+          <video id='remote' autoPlay></video>
         </IonContent>
       </IonPage>
     );
