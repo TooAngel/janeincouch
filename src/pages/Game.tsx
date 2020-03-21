@@ -187,8 +187,8 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     const components = [];
     components.push(<Players key="players" players={this.state.players} />)
     if (this.state.state === GameState.Playing) {
-      components.push(<Words words={this.state.words} />);
       components.push(<Scores players={this.state.players} />);
+      components.push(<Words words={this.state.words} />);
       components.push(<Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />);
     }
 

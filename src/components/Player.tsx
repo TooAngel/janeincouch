@@ -22,9 +22,7 @@ class Player extends React.Component<PlayerProps, { }> {
 
   render() {
     return (
-      <IonCol key={this.props.player.id} size="4">{this.props.player.id} {this.props.player.score}
-        <video id={ `player${this.props.player.id}` } autoPlay></video>
-      </IonCol>
+      <video id={ `player${this.props.player.id}` } autoPlay></video>
     );
   }
 };
