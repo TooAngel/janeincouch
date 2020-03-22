@@ -39,21 +39,17 @@ class Actions extends React.Component<ActionsProps, { }> {
       if (this.props.player.role === Role.explaining) {
         right = (
           <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => this.next(true)}>
-          Richtig
-          &nbsp;
           <IonIcon color="light" icon={checkmarkCircleOutline} />
           </IonButton>
         )
         wrong = (
           <IonButton expand="block" size="large" fill="outline" color="danger" onClick={() => this.next(false)}>
           <IonIcon color="danger" icon={closeCircleOutline} />
-          &nbsp;
-          Weiter
           </IonButton>
         )
         buttons = (<IonRow>
-          <IonCol>{wrong}</IonCol>
-          <IonCol>{right}</IonCol>
+          <IonCol size="6">{wrong}</IonCol>
+          <IonCol size="6">{right}</IonCol>
         </IonRow>);
       }
     } else if (this.props.gameState === GameState.Waiting) {
