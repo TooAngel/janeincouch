@@ -7,6 +7,7 @@ commonLabels:
   stage: test
 
 resources:
+- dockerconfigjson-sealed-secret.yaml
 - namespace.yaml
 - ingress.yaml
 - ../../bases/game
