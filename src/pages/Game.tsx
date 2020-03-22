@@ -28,28 +28,43 @@ interface GameProps {
   match: Match;
 }
 
-class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: string[], wordActive: string, gameState: GameState, streamAvailable: boolean, playerActive: number, gameMode: GameMode.NoSound}> {
+interface State {
+  players: Player[],
+  words: string[],
+  wordActive: string,
+  gameState: GameState,
+  playerActive: number,
+  gameMode: GameMode,
+  timer: number,
+  server: boolean
+}
+
+class Game extends React.Component<GameProps, State> {
   peer: Peer | null;
   stream: MediaStream | null;
   peerId: string | undefined;
+  interval: number | undefined;
 
   constructor(props: GameProps) {
     super(props);
     this.peer = null;
     this.stream = null;
     this.peerId = undefined;
+    this.interval = undefined;
+    let server = false;
     if (this.props.match.params.leader) {
       this.peerId = this.props.match.params.id;
+      server = true;
     }
     this.state = {
-      currentPlayerID: 0,
       players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: this.peerId || '', srcObject: null, connection: null}],
       words: ['hund', 'katze', 'mause', 'auto', 'mopped', 'rad', 'tische', 'stuhl', 'lample', 'baum', 'blume', 'strauch', 'fenster', 'tuer', 'decke', 'mond', 'sonne', 'sterne'],
       wordActive: '',
       playerActive: 0,
       gameState: GameState.Waiting,
-      streamAvailable: false,
       gameMode: GameMode.NoSound,
+      timer: 300,
+      server: server,
     };
     this.setPlayer = this.setPlayer.bind(this);
     this.initRTC = this.initRTC.bind(this);
@@ -62,19 +77,23 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
       this.stream = stream;
-      this.state.players[0].srcObject = this.stream;
-      this.setState({players: this.state.players});
-      this.setState({streamAvailable: true});
+      const players = this.state.players;
+      players[0].srcObject = this.stream;
+      this.setState({players: players});
       this.initRTC();
     });
   }
 
-  updateClients() {
+  updateClients(config: State) {
     const data = {
       state: {
-        gameState: this.state.gameState
+        wordActive: config.wordActive,
+        playerActive: config.playerActive,
+        gameState: config.gameState,
+        gameMode: config.gameMode,
+        timer: config.timer,
       },
-      players: this.state.players
+      players: config.players
     };
     const replacer = (key: string, value: any) => {
       if (key === 'srcObject' || key === 'connection') {
@@ -93,9 +112,15 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
   }
 
   handleServer() {
+    let port = 9001;
+    if (window.location.protocol === "https:") {
+      port = 9002;
+    }
+    // TODO not yet working
+    port = 9000;
     this.peer = new Peer(this.peerId, {
       host: 'peer.couchallenge.de',
-      port: 9000,
+      port: port,
       path: '/myapp',
       key: 'cccccc',
     });
@@ -118,7 +143,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           connection: conn,
         });
         this.setState({players: this.state.players});
-        this.updateClients();
+        this.updateClients(this.state);
       });
     });
   }
@@ -128,8 +153,6 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
       console.log('handleClientOpenPeer peer.on open id = null, why?');
       return;
     }
-    let currentPlayerID = this.state.currentPlayerID;
-
     if (this.peer === null) {
       console.log('handleClient peer.on open this.peer = null, why?');
       return;
@@ -142,6 +165,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     conn.on('data', (data) => {
       console.log('client on data', data);
       const message = JSON.parse(data);
+
       const players: Player[] = message.players;
       for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
         const player = players[playerIndex];
@@ -154,7 +178,6 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
 
         if (player.peerId === id) {
           console.log('call it is me');
-          currentPlayerID = playerIndex;
           player.srcObject = this.stream;
           continue;
         }
@@ -172,16 +195,35 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           });
         }
       }
-      this.setState({players: players, currentPlayerID: currentPlayerID});
+      const state = message.state;
+      console.log(state.gameState, GameState.Playing);
+      if (state.gameState === GameState.Playing) {
+        this.interval = window.setInterval(() => this.handleTimer(), 1000);
+      }
+      this.setState({
+        players: players,
+        wordActive: state.wordActive,
+        playerActive: state.playerActive,
+        gameState: state.gameState,
+        gameMode: state.gameMode,
+        timer: state.timer
+      });
     });
   }
 
   handleClient() {
     console.log('handle client');
 
+    let port = 9001;
+    if (window.location.protocol === "https:") {
+      port = 9002;
+    }
+    // TODO not yet working
+    port = 9000;
+
     this.peer = new Peer(this.peerId, {
       host: 'peer.couchallenge.de',
-      port: 9000,
+      port: port,
       path: '/myapp',
       key: 'cccccc',
     });
@@ -223,8 +265,18 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
 
   setPlayer(player: Player) {
     const players = this.state.players;
-    players[this.state.currentPlayerID] = player;
+    players[this.state.playerActive] = player;
     this.setState({players: players});
+  }
+
+  handleTimer() {
+    let timer = this.state.timer - 1;
+    if (timer <= 0) {
+      this.setState({gameState: GameState.Waiting, timer: timer});
+      clearInterval(this.interval);
+    } else {
+      this.setState({timer: timer});
+    }
   }
 
   startRound() {
@@ -232,23 +284,35 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     const word = this.state.words[Math.floor(Math.random() * this.state.words.length)];
     const player = Math.floor(Math.random() * this.state.players.length);
     const gameMode = Math.floor(Math.random() * 2);
-    this.setState({wordActive: word, playerActive: player, gameState: GameState.Playing, gameMode: gameMode});
+    this.setState({wordActive: word, playerActive: player, gameState: GameState.Playing, gameMode: gameMode, timer: 30});
+    this.interval = window.setInterval(() => this.handleTimer(), 1000);
+    const data = {
+      wordActive: word,
+      playerActive: player,
+      gameState: GameState.Playing,
+      gameMode: gameMode,
+      timer: 30,
+      words: this.state.words,
+      players: this.state.players,
+      server: false,
+    };
+    this.updateClients(data);
   }
 
   render() {
     const components = [];
-    components.push(<Players key="players" players={this.state.players} />)
+    components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode}/>)
     if (this.state.gameState === GameState.Playing) {
       // components.push(<Scores players={this.state.players} />);
       components.push(<Words key="words" word={this.state.wordActive} />);
     }
-    components.push(<Actions key="actions" player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound}/>);
+    components.push(<Actions key="actions" player={this.state.players[this.state.playerActive]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound} server={this.state.server}/>);
 
     return (
       <IonPage>
         <IonHeader>
           <IonToolbar>
-            <IonTitle>GameID {this.props.match.params.id} {this.state.wordActive} {this.state.playerActive} {this.state.gameState === 0 ? 'Waiting' : 'Playing'} {this.state.gameMode === 0 ? 'No Sound' : 'No Camera'}</IonTitle>
+            <IonTitle>GameID {this.props.match.params.id} {this.state.wordActive} {this.state.playerActive} {this.state.gameState === 0 ? 'Waiting' : 'Playing'} {this.state.gameMode === 0 ? 'No Sound' : 'No Camera'} {this.state.timer}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>

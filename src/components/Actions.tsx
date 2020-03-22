@@ -11,6 +11,7 @@ interface ActionsProps {
   setPlayer(player: Player): void;
   gameState: GameState;
   startRound(): void;
+  server: boolean;
 }
 
 class Actions extends React.Component<ActionsProps, { }> {
@@ -53,7 +54,7 @@ class Actions extends React.Component<ActionsProps, { }> {
         </IonRow>);
       }
     } else if (this.props.gameState === GameState.Waiting) {
-      if (this.props.player.leader) {
+      if (this.props.server) {
         buttons = (<IonRow>
           <IonCol>
             <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => this.props.startRound()}>

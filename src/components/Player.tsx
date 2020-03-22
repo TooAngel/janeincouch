@@ -4,6 +4,8 @@ import './Player.css'
 
 interface PlayerProps {
   player: PlayerInterface;
+  muted: boolean;
+  noVideo: boolean;
 }
 
 class Player extends React.Component<PlayerProps, { }> {
@@ -28,7 +30,7 @@ class Player extends React.Component<PlayerProps, { }> {
 
   render() {
     return (
-      <video id={ `player${this.props.player.id}` } autoPlay></video>
+      <video id={`player${this.props.player.id}`} muted={this.props.muted} autoPlay={!this.props.noVideo}></video>
     );
   }
 };
