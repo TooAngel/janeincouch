@@ -1,11 +1,14 @@
 import React from 'react';
+import { IonIcon } from '@ionic/react';
 import { Player as PlayerInterface } from '../interfaces/Player'
+import { volumeMuteOutline } from 'ionicons/icons'
 import './Player.css'
 
 interface PlayerProps {
   player: PlayerInterface;
   muted: boolean;
   noVideo: boolean;
+  me: boolean;
 }
 
 class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix: number }> {
@@ -55,8 +58,20 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
 
   render() {
     // TODO disable video (with overlay?)
+    let videoClassName = "video";
+    if (this.props.noVideo) {
+      videoClassName += " hidden";
+    }
+
+    let muteIconClassName = "muteicon";
+    if (this.props.muted) {
+      muteIconClassName += " muted";
+    }
     return (
-      <video id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
+      <>
+        <IonIcon className={muteIconClassName} color="warning" icon={volumeMuteOutline} />
+        <video className={videoClassName} id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.me || this.props.muted} poster="/assets/logo.svg" autoPlay></video>
+      </>
     );
   }
 };
