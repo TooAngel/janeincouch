@@ -9,8 +9,17 @@ interface PlayerProps {
 }
 
 class Player extends React.Component<PlayerProps, { }> {
+  videoLoaded = false;
 
   shouldComponentUpdate(nextProps: PlayerProps) {
+    console.log('shouldComponentUpdate');
+    // TODO not sure why I need this hack
+    if (!this.videoLoaded && nextProps.player.srcObject !== null) {
+      this.videoLoaded = true;
+      return true;
+    }
+    console.log(this.props.player.srcObject)
+    console.log(nextProps.player.srcObject)
     if (this.props.muted !== nextProps.muted) {
       return true;
     } else if (this.props.noVideo !== nextProps.noVideo) {
