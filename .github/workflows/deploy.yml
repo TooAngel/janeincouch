@@ -1,0 +1,76 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+    - "*" # run for any branch
+    tags:
+    - "*" # run for any tag
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    #
+    #
+    # Kustomize edit image tag
+    # (only for test workspace)
+    - name: Image tag
+      uses: ./.github/actions/terraform-kustomize
+      if: startsWith(github.ref, 'refs/heads/')
+      with:
+        workdir: deploy/overlays/test
+        args: kustomize edit set image couchallenge=docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}}
+
+    #
+    #
+    # Terraform
+    - name: Init
+      uses: ./.github/actions/terraform-kustomize
+      env:
+        TF_IN_AUTOMATION: 1
+        TF_WORKSPACE: test
+      with:
+        creds_terraform: ${{ secrets.CREDS_TERRAFORM}}
+        creds_gcloud: ${{ secrets.CREDS_GCLOUD }}
+        creds_kubernetes: ${{ secrets.CREDS_KUBERNETES}}
+        workdir: deploy/
+        args: terraform init --input=false
+
+    - name: Test workspace
+      uses: ./.github/actions/terraform-kustomize
+      env:
+        TF_IN_AUTOMATION: 1
+      if: startsWith(github.ref, 'refs/heads/')
+      with:
+        workdir: deploy/
+        args: terraform workspace select test
+
+    - name: Prod workspace
+      uses: ./.github/actions/terraform-kustomize
+      env:
+        TF_IN_AUTOMATION: 1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        workdir: deploy/
+        args: terraform workspace select prod
+
+    - name: Plan
+      uses: ./.github/actions/terraform-kustomize
+      env:
+        TF_IN_AUTOMATION: 1
+      with:
+        workdir: deploy/
+        args: terraform plan --input=false --out=tfplan
+
+    - name: Apply
+      uses: ./.github/actions/terraform-kustomize
+      env:
+        TF_IN_AUTOMATION: 1
+      if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
+      with:
+        workdir: deploy/
+        args: terraform apply --input=false tfplan
