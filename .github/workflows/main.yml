@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches:
+    - "*"  # run on any branch
+    tags:
+    - "!*"  # do not run for tags
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    #
+    #
+    # Build image
+    - name: Build image
+      env:
+        DOCKER_BUILDKIT: 1
+      run: docker build -t docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}} .
+
+    #
+    #
+    # Push image
+    - name: Docker login
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u "couchaellenge+github_actions" --password-stdin
+
+    - name: Docker push
+      run: docker push docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}}

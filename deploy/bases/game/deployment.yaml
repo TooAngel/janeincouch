@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: game
+  name: game
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+      - image: docker.pkg.github.com/tooangel/couchallenge/couchallenge:9a4f6ee8be3d64868ac2ee8bdc6fc5321c4d1963
+        name: couchallenge
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "32Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+      imagePullSecrets:
+      - name: couchallenge-dockerconfigjson
