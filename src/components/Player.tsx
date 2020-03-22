@@ -8,13 +8,20 @@ interface PlayerProps {
   noVideo: boolean;
 }
 
-class Player extends React.Component<PlayerProps, { }> {
-  videoLoaded = false;
+class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix: number }> {
+
+  constructor(props: PlayerProps) {
+    super(props);
+    this.state = {
+      videoLoaded: false,
+      postFix: Math.floor(Math.random() * 100),
+    }
+  }
 
   shouldComponentUpdate(nextProps: PlayerProps) {
     // TODO not sure why I need this hack
-    if (!this.videoLoaded && nextProps.player.srcObject !== null) {
-      this.videoLoaded = true;
+    if (!this.state.videoLoaded && nextProps.player.srcObject !== null) {
+      this.setState({videoLoaded: true});
       return true;
     }
     if (this.props.muted !== nextProps.muted) {
@@ -30,7 +37,7 @@ class Player extends React.Component<PlayerProps, { }> {
 
   componentDidMount() {
     // I guess this can be better solved with `React.createRef`, but the types are tricky
-    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id}`);
+    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id + this.state.postFix}`);
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
       localVideo.srcObject = this.props.player.srcObject;
@@ -41,7 +48,7 @@ class Player extends React.Component<PlayerProps, { }> {
 
   componentDidUpdate() {
     // I guess this can be better solved with `React.createRef`, but the types are tricky
-    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id}`);
+    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id + this.state.postFix}`);
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
       localVideo.srcObject = this.props.player.srcObject;
@@ -53,7 +60,7 @@ class Player extends React.Component<PlayerProps, { }> {
   render() {
     // TODO disable video (with overlay?)
     return (
-      <video id={`player${this.props.player.id}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
+      <video id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
     );
   }
 };

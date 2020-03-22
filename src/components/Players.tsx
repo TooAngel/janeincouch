@@ -2,7 +2,6 @@ import React from 'react';
 import { IonGrid, IonCol, IonRow } from '@ionic/react';
 import { Player as PlayerInterface } from '../interfaces/Player'
 import { Team } from '../interfaces/Team'
-import { Role } from '../interfaces/State'
 import './Players.css'
 import { GameMode } from '../interfaces/GameMode'
 import { GameState } from '../interfaces/GameState'
@@ -14,11 +13,12 @@ interface PlayerProps {
   gameMode: GameMode;
   gameState: GameState;
   myPeerId: string | undefined;
+  playerActive: number;
 }
 
 function getPlayerPlayer(p: PlayerInterface, size: string, muted: boolean, noVideo: boolean): any {
   return (
-    <IonRow key={p.id}>
+    <IonRow key={p.id + size}>
     <IonCol size={size}>
     <Player player={p} muted={muted} noVideo={noVideo} />
     </IonCol>
@@ -33,9 +33,10 @@ class Players extends React.Component<PlayerProps, { }> {
     let activePlayer = (<></>);
     let allPlayers: PlayerInterface[][] = [[], []];
 
-    for (let player of this.props.players) {
+    for (let playerIndex = 0; playerIndex < this.props.players.length; playerIndex++) {
+      const player = this.props.players[playerIndex];
       const me = player.peerId === this.props.myPeerId;
-      if (player.role === Role.explaining) {
+      if (playerIndex === this.props.playerActive) {
         activePlayer = getPlayerPlayer(player, '12', me || (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
         allPlayers[player.team].push(getPlayerPlayer(player, '6', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
       } else {
