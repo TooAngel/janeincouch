@@ -1,8 +1,8 @@
 {
-  "appId": "de.couchallenge.de",
+  "appId": "de.couchallenge.app",
   "appName": "couchallenge",
   "bundledWebRuntime": false,
   "npmClient": "npm",
-  "webDir": "public",
+  "webDir": "build",
   "cordova": {}
 }
