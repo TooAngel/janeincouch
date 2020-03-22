@@ -8,6 +8,7 @@ import { Player } from '../interfaces/Player'
 import { Team } from '../interfaces/Team'
 import { Word } from '../interfaces/Word'
 import { Role } from '../interfaces/State'
+import { GameState } from '../interfaces/GameState'
 
 import Actions from '../components/Actions';
 import Players from '../components/Players';
@@ -58,11 +59,6 @@ let ws: Word[] = [];
 // ws.push({playerID: "f", word: "sonne"})
 // ws.push({playerID: "f", word: "sterne"})
 
-enum GameState {
-  Waiting,
-  Playing
-}
-
 class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: Word[], state: GameState }> {
   peer: Peer;
   stream: MediaStream | null;
@@ -76,7 +72,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     }
     this.state = {
       currentPlayerID: 0,
-      players: [{id: '0', team: Team.red, role: Role.explaining, score: 0, peerId: peerId || '', srcObject: null, connection: null}],
+      players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: peerId || '', srcObject: null, connection: null}],
       words: ws,
       state: GameState.Waiting,
     };
@@ -138,6 +134,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           id: `${this.state.players.length}`,
           team: this.state.players.length % 2,
           role: Role.explaining,
+          leader: false,
           score: 0,
           peerId: conn.peer,
           srcObject: null,
@@ -228,7 +225,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
       components.push(<Scores players={this.state.players} />);
       components.push(<Words words={this.state.words} />);
     }
-    components.push(<Actions key="actions" player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />);
+    components.push(<Actions key="actions" player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} gameState={this.state.state} />);
 
     return (
       <IonPage>

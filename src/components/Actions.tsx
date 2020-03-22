@@ -4,10 +4,12 @@ import { closeCircleOutline, checkmarkCircleOutline } from 'ionicons/icons'
 
 import { Player } from '../interfaces/Player'
 import { Role } from '../interfaces/State'
+import { GameState } from '../interfaces/GameState'
 
 interface ActionsProps {
   player: Player;
   setPlayer(player: Player): void;
+  state: GameState;
 }
 
 const Actions: React.FC<ActionsProps> = (props) => {
