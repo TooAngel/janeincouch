@@ -8,7 +8,6 @@ commonLabels:
 
 resources:
 - ../../bases/rbac
-- dockerconfigjson-sealed-secret.yaml
 - namespace.yaml
 - ingress.yaml
 - ../../bases/game
