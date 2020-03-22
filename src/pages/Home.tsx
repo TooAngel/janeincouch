@@ -16,6 +16,7 @@ const Home: React.FC = () => {
         <img src="/assets/logo.svg" alt="logo" width="100%" />
         <CreateGame />
         <JoinGame />
+        <a href="/apk/couchallenge.apk">android apk</a>
       </IonContent>
     </IonPage>
   );
