@@ -1,4 +1,4 @@
 export enum GameState {
   Waiting,
-  Playing
+  Playing,
 }
