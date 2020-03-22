@@ -8,9 +8,22 @@ interface PlayerProps {
   noVideo: boolean;
 }
 
-class Player extends React.Component<PlayerProps, { }> {
+class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix: number }> {
+
+  constructor(props: PlayerProps) {
+    super(props);
+    this.state = {
+      videoLoaded: false,
+      postFix: Math.floor(Math.random() * 100),
+    }
+  }
 
   shouldComponentUpdate(nextProps: PlayerProps) {
+    // TODO not sure why I need this hack
+    if (!this.state.videoLoaded && nextProps.player.srcObject !== null) {
+      this.setState({videoLoaded: true});
+      return true;
+    }
     if (this.props.muted !== nextProps.muted) {
       return true;
     } else if (this.props.noVideo !== nextProps.noVideo) {
@@ -23,12 +36,10 @@ class Player extends React.Component<PlayerProps, { }> {
   }
 
   componentDidMount() {
-    console.log('player componentDidMount');
     // I guess this can be better solved with `React.createRef`, but the types are tricky
-    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id}`);
+    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id + this.state.postFix}`);
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
-      console.log('set srcObject');
       localVideo.srcObject = this.props.player.srcObject;
     } else {
       console.log('did not set srcObject', localVideo, srcObject);
@@ -36,12 +47,10 @@ class Player extends React.Component<PlayerProps, { }> {
   }
 
   componentDidUpdate() {
-    console.log('player componentDidUpdate')
     // I guess this can be better solved with `React.createRef`, but the types are tricky
-    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id}`);
+    const localVideo: HTMLVideoElement | null = document.querySelector(`video#player${this.props.player.id + this.state.postFix}`);
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
-      console.log('set srcObject');
       localVideo.srcObject = this.props.player.srcObject;
     } else {
       console.log('did not set srcObject', localVideo, srcObject);
@@ -49,10 +58,9 @@ class Player extends React.Component<PlayerProps, { }> {
   }
 
   render() {
-    console.log('player render')
     // TODO disable video (with overlay?)
     return (
-      <video id={`player${this.props.player.id}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
+      <video id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
     );
   }
 };

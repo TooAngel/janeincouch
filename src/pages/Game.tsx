@@ -298,7 +298,7 @@ class Game extends React.Component<GameProps, State> {
 
   render() {
     const components = [];
-    components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode}/>)
+    components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode} myPeerId={this.peerId} playerActive={this.state.playerActive}/>)
     if (this.state.gameState === GameState.Playing) {
       // components.push(<Scores players={this.state.players} />);
       components.push(<Words key="words" word={this.state.wordActive} />);
