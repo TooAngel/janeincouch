@@ -13,6 +13,7 @@ interface PlayerProps {
   players: PlayerInterface[];
   gameMode: GameMode;
   gameState: GameState;
+  myPeerId: string | undefined;
 }
 
 function getPlayerPlayer(p: PlayerInterface, size: string, muted: boolean, noVideo: boolean): any {
@@ -32,12 +33,13 @@ class Players extends React.Component<PlayerProps, { }> {
     let activePlayer = (<></>);
     let allPlayers: PlayerInterface[][] = [[], []];
 
-    for (let p of this.props.players) {
-      if (p.role === Role.explaining) {
-        activePlayer = getPlayerPlayer(p, '12', this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
-        allPlayers[p.team].push(getPlayerPlayer(p, '6', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
+    for (let player of this.props.players) {
+      const me = player.peerId === this.props.myPeerId;
+      if (player.role === Role.explaining) {
+        activePlayer = getPlayerPlayer(player, '12', me || (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
+        allPlayers[player.team].push(getPlayerPlayer(player, '6', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
       } else {
-        allPlayers[p.team].push(getPlayerPlayer(p, '6', false, false));
+        allPlayers[player.team].push(getPlayerPlayer(player, '6', me, false));
       }
     }
 
