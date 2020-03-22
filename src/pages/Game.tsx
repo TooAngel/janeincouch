@@ -70,9 +70,13 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
   constructor(props: GameProps) {
     super(props);
     this.stream = null;
+    let peerId = undefined;
+    if (this.props.match.params.leader) {
+      peerId = this.props.match.params.id;
+    }
     this.state = {
       currentPlayerID: 0,
-      players: [{id: '0', team: Team.red, role: Role.explaining, score: 0, peerId: this.props.match.params.id, srcObject: null, connection: null}],
+      players: [{id: '0', team: Team.red, role: Role.explaining, score: 0, peerId: peerId || '', srcObject: null, connection: null}],
       words: ws,
       state: GameState.Waiting,
     };
@@ -82,22 +86,19 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     this.handleClient = this.handleClient.bind(this);
     this.updateClients = this.updateClients.bind(this);
 
-    let connectId = undefined;
-    if (this.props.match.params.leader) {
-      connectId = this.props.match.params.id;
-    }
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
       this.stream = stream;
       this.state.players[0].srcObject = this.stream;
       this.setState({players: this.state.players});
     });
-    this.peer = new Peer(connectId, {
+    this.peer = new Peer(peerId, {
       host: 'peer.couchallenge.de',
       port: 9000,
       path: '/myapp',
       key: 'cccccc',
     });
+    console.log('peer id', this.peer.id);
     this.initRTC();
   }
 
@@ -163,11 +164,13 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           const player = players[playerIndex];
           const oldPlayer = this.state.players.find(element => element.peerId === player.peerId && !!element.srcObject);
           if (oldPlayer) {
+            console.log('oldPlayer found', player, oldPlayer);
             player.srcObject = oldPlayer.srcObject;
             continue;
           }
 
           if (player.peerId === id) {
+            console.log('call it is me');
             player.srcObject = this.stream;
             continue;
           }
