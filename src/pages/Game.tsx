@@ -11,6 +11,7 @@ import { GameState } from '../interfaces/GameState'
 import { GameMode } from '../interfaces/GameMode'
 
 import Actions from '../components/Actions';
+import Hourglass from '../components/Hourglass';
 import Players from '../components/Players';
 import Scores from '../components/Scores';
 import Words from '../components/Words';
@@ -61,7 +62,7 @@ class Game extends React.Component<GameProps, State> {
     }
     this.state = {
       players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: this.peerId || '', srcObject: null, connection: null}],
-      words: ['hund', 'katze', 'mause', 'auto', 'mopped', 'rad', 'tische', 'stuhl', 'lample', 'baum', 'blume', 'strauch', 'fenster', 'tuer', 'decke', 'mond', 'sonne', 'sterne'],
+      words: ['hund', 'katze', 'maus', 'auto', 'mopped', 'rad', 'tisch', 'stuhl', 'lampe', 'baum', 'blume', 'strauch', 'fenster', 'tuer', 'decke', 'mond', 'sonne', 'sterne'],
       wordActive: '',
       playerActive: 0,
       gameState: GameState.Waiting,
@@ -297,6 +298,7 @@ class Game extends React.Component<GameProps, State> {
     const components = [];
     components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode} myPeerId={this.peerId} playerActive={this.state.playerActive}/>)
     components.push(<Scores key="scores" players={this.state.players} />);
+    components.push(<Hourglass key="hourglass" timeLeft={this.state.timer} />);
     if (this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) {
       components.push(<Words key="words" word={this.state.wordActive} />);
     }
