@@ -1,8 +1,10 @@
-version: "3"
+version: "3.4"
 
 services:
   game:
-    build: .
+    build:
+      context: .
+      target: dev
     working_dir: /game
     restart: on-failure
     volumes:
