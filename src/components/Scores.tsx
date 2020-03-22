@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonGrid, IonRow, IonCol, IonCard, IonCardContent, IonIcon } from '@ionic/react';
+import { IonGrid, IonRow, IonCol, IonIcon } from '@ionic/react';
 import { pizzaOutline, fastFoodOutline } from 'ionicons/icons'
 import './Scores.css';
 

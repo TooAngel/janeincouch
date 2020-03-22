@@ -38,7 +38,6 @@ function getPlayerPlayer(p: PlayerInterface, active: boolean, size: string, mute
 class Players extends React.Component<PlayerProps, { }> {
 
   render() {
-    console.log('Players render', this.props.players);
     let activePlayer = (<></>);
     let allPlayers: PlayerInterface[][] = [[], []];
 

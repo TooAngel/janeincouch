@@ -104,6 +104,7 @@ class Game extends React.Component<GameProps, State> {
     };
     const message = JSON.stringify(data, replacer);
     for (const player of this.state.players) {
+      console.log(player);
       if (!player.connection) {
         continue;
       }
@@ -226,6 +227,7 @@ class Game extends React.Component<GameProps, State> {
     });
     console.log('peer id', this.peer.id);
     this.peer.on('open', (id) => {
+      this.peerId = id;
       this.handleClientOpenPeer(id);
     });
   }
@@ -299,11 +301,15 @@ class Game extends React.Component<GameProps, State> {
   render() {
     const components = [];
     components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode} myPeerId={this.peerId} playerActive={this.state.playerActive}/>)
-    if (this.state.gameState === GameState.Playing) {
-      components.push(<Scores key="scores" players={this.state.players} />);
+    components.push(<Scores key="scores" players={this.state.players} />);
+    if (this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) {
       components.push(<Words key="words" word={this.state.wordActive} />);
     }
-    components.push(<Actions key="actions" player={this.state.players[this.state.playerActive]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound} server={this.state.server}/>);
+    if ((this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) ||
+        (this.state.gameState === GameState.Waiting && this.state.server)
+    ) {
+      components.push(<Actions key="actions" player={this.state.players[this.state.playerActive]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound} server={this.state.server}/>);
+    }
 
     return (
       <IonPage>
