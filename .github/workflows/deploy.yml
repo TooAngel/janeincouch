@@ -23,7 +23,7 @@ jobs:
       if: startsWith(github.ref, 'refs/heads/')
       with:
         workdir: deploy/overlays/test
-        args: kustomize edit set image couchallenge=docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}}
+        args: kustomize edit set image docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}}
 
     #
     #
