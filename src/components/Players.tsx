@@ -12,44 +12,45 @@ interface PlayerProps {
 
 const Players: React.FC<PlayerProps> = (props) => {
 
-  let activePlayer = (<></>);
-  let active = props.players.filter(p => p.role === Role.explaining);
-  if (active.length === 1) {
-    activePlayer = (<IonCol size="12"><Player key={active[0].id} player={active[0]} /></IonCol>);
+  function getPlayerPlayer(p: PlayerInterface, size: string): any {
+    return (
+      <IonRow key={p.id}>
+        <IonCol size={size}>
+          <Player player={p} />
+        </IonCol>
+      </IonRow>
+    );
   }
 
-  let blues = props.players.filter(p => p.team === Team.blue);
-  let reds = props.players.filter(p => p.team === Team.red);
+  let activePlayer = (<></>);
+  let allPlayers: PlayerInterface[][] = [[], []];
 
-  let allPlayers: any[] = [];
-  for (var r = 0; r < props.players.length / 2; r++) {
-
-    let redPlayer = (<></>);
-    let bluePlayer = (<></>);
-    if (reds.length > 0) {
-      redPlayer = (
-        <IonCol key={reds[r].id} size="6">
-          <Player player={reds[r]} />
-        </IonCol>
-      );
+  for (let p of props.players) {
+    if (p.role === Role.explaining) {
+      activePlayer = getPlayerPlayer(p, "12");
     }
 
-    if (blues.length > 0) {
-      bluePlayer = (
-        <IonCol key={blues[r].id} size="6">
-          <Player player={blues[r]} />
-        </IonCol>
-      );
+    if (Array.isArray(allPlayers[p.team]) === false) {
+        allPlayers[p.team] = [];
     }
-    allPlayers.push(<IonRow key={r}>{redPlayer}{bluePlayer}</IonRow>)
+    allPlayers[p.team].push(getPlayerPlayer(p, "6"));
   }
 
   return (
     <IonGrid>
+      {activePlayer}
       <IonRow>
-        {activePlayer}
+        <IonCol>
+          <IonGrid>
+            {allPlayers[Team.red]}
+          </IonGrid>
+        </IonCol>
+        <IonCol>
+          <IonGrid>
+            {allPlayers[Team.blue]}
+          </IonGrid>
+        </IonCol>
       </IonRow>
-      {allPlayers}
     </IonGrid>
   );
 };
