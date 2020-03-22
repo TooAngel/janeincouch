@@ -301,13 +301,8 @@ class Game extends React.Component<GameProps, State> {
   render() {
     const components = [];
     components.push(<Players key="players" players={this.state.players} gameState={this.state.gameState} gameMode={this.state.gameMode} myPeerId={this.peerId} playerActive={this.state.playerActive}/>)
-<<<<<<< HEAD
-    if (this.state.gameState === GameState.Playing) {
-      components.push(<Scores key="scores" players={this.state.players} />);
-=======
+    components.push(<Scores key="scores" players={this.state.players} />);
     if (this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) {
-      // components.push(<Scores players={this.state.players} />);
->>>>>>> Show word only if it is your turn or you are the server
       components.push(<Words key="words" word={this.state.wordActive} />);
     }
     if ((this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) ||
