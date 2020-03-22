@@ -16,6 +16,8 @@ import Scores from '../components/Scores';
 import Words from '../components/Words';
 import Title from '../components/Title';
 
+const roundDuration = 30;
+
 interface Params {
   id: string;
   leader: string;
@@ -104,7 +106,6 @@ class Game extends React.Component<GameProps, State> {
     };
     const message = JSON.stringify(data, replacer);
     for (const player of this.state.players) {
-      console.log(player);
       if (!player.connection) {
         continue;
       }
@@ -124,14 +125,10 @@ class Game extends React.Component<GameProps, State> {
       path: '/myapp',
       key: 'cccccc',
     });
-    this.peer.on('open', (id) => {
-      console.log('server on open', id);
-    })
+    // this.peer.on('open', () => {})
 
     this.peer.on('connection', (conn) => {
-      console.log('server on connection', conn);
-      conn.on('data', (data) => {
-        console.log('server on data', data);
+      conn.on('data', () => {
         this.state.players.push({
           id: `${this.state.players.length}`,
           team: this.state.players.length % 2,
@@ -146,6 +143,9 @@ class Game extends React.Component<GameProps, State> {
         this.updateClients(this.state);
       });
     });
+    this.peer.on('close', function() { console.log('peer closed'); });
+    this.peer.on('disconnected', function() { console.log('peer disconnected'); });
+    this.peer.on('error', function(err) { console.log('peer error', err); });
   }
 
   handleClientOpenPeer(id: string) {
@@ -159,11 +159,9 @@ class Game extends React.Component<GameProps, State> {
     }
     var conn = this.peer.connect(this.props.match.params.id);
     conn.on('open', () => {
-      console.log('client on open', id);
       conn.send(JSON.stringify({hello: true}));
     })
     conn.on('data', (data) => {
-      console.log('client on data', data);
       const message = JSON.parse(data);
 
       const players: Player[] = message.players;
@@ -171,25 +169,21 @@ class Game extends React.Component<GameProps, State> {
         const player = players[playerIndex];
         const oldPlayer = this.state.players.find(element => element.peerId === player.peerId && !!element.srcObject);
         if (oldPlayer) {
-          console.log('oldPlayer found', player, oldPlayer);
           player.srcObject = oldPlayer.srcObject;
           continue;
         }
 
         if (player.peerId === id) {
-          console.log('call it is me');
           player.srcObject = this.stream;
           continue;
         }
 
         if (this.stream) {
           if (this.peer === null) {
-            console.log('handleClient peer.on data this.peer = null, why?');
             return;
           }
           const call = this.peer.call(player.peerId, this.stream);
           call.on('stream', (remoteStream) => {
-            console.log('call out on stream', remoteStream);
             player.srcObject = remoteStream;
             this.setState({players: players});
           });
@@ -225,16 +219,17 @@ class Game extends React.Component<GameProps, State> {
       path: '/myapp',
       key: 'cccccc',
     });
-    console.log('peer id', this.peer.id);
     this.peer.on('open', (id) => {
       this.peerId = id;
       this.handleClientOpenPeer(id);
     });
+
+    this.peer.on('close', function() { console.log('peer closed'); });
+    this.peer.on('disconnected', function() { console.log('peer disconnected'); });
+    this.peer.on('error', function(err) { console.log('peer error', err); });
   }
 
   initRTC() {
-    console.log('init rtc', this.props.match.params.leader);
-
     if (this.props.match.params.leader) {
       this.handleServer();
     } else {
@@ -245,19 +240,20 @@ class Game extends React.Component<GameProps, State> {
       return;
     }
     this.peer.on('call', (call) => {
-      console.log('call', call);
       if (this.stream) {
         call.answer(this.stream);
         call.on('stream', (remoteStream) => {
           const player = this.state.players.find((player) => player.peerId === call.peer);
           if (player) {
-            console.log('Setting stream to', player)
             player.srcObject = remoteStream;
             this.setState({players: this.state.players})
           } else {
             console.log('Can not find player in players on call', call, this.state.players);
           }
         });
+
+        call.on('close', function() {console.log('call close')});
+        call.on('error', function(err) {console.log('call error', err)});
       }
     });
   }
@@ -279,18 +275,17 @@ class Game extends React.Component<GameProps, State> {
   }
 
   startRound() {
-    console.log('startRound');
     const word = this.state.words[Math.floor(Math.random() * this.state.words.length)];
     const player = Math.floor(Math.random() * this.state.players.length);
     const gameMode = Math.floor(Math.random() * 2);
-    this.setState({wordActive: word, playerActive: player, gameState: GameState.Playing, gameMode: gameMode, timer: 30});
+    this.setState({wordActive: word, playerActive: player, gameState: GameState.Playing, gameMode: gameMode, timer: roundDuration});
     this.interval = window.setInterval(() => this.handleTimer(), 1000);
     const data = {
       wordActive: word,
       playerActive: player,
       gameState: GameState.Playing,
       gameMode: gameMode,
-      timer: 30,
+      timer: roundDuration,
       words: this.state.words,
       players: this.state.players,
       server: false,

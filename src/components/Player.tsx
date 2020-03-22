@@ -41,8 +41,6 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
       localVideo.srcObject = this.props.player.srcObject;
-    } else {
-      console.log('did not set srcObject', localVideo, srcObject);
     }
   }
 
@@ -52,8 +50,6 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
     const srcObject = this.props.player.srcObject;
     if (localVideo && srcObject && srcObject !== null) {
       localVideo.srcObject = this.props.player.srcObject;
-    } else {
-      console.log('did not set srcObject', localVideo, srcObject);
     }
   }
 
