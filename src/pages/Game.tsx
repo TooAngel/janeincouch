@@ -72,7 +72,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     this.stream = null;
     this.state = {
       currentPlayerID: 0,
-      players: [],
+      players: [{id: '0', team: Team.red, role: Role.explaining, score: 0, peerId: this.props.match.params.id, srcObject: null}],
       words: ws,
       state: GameState.Waiting,
     };
@@ -87,8 +87,8 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
       this.stream = stream;
-      const player = {id: '0', team: Team.red, role: Role.explaining, score: 0, peerId: this.props.match.params.id, srcObject:this.stream};
-      this.setState({players: [player]});
+      this.state.players[0].srcObject = this.stream;
+      this.setState({players: this.state.players});
     });
     this.peer = new Peer(connectId, {
       host: 'peer.couchallenge.de',
@@ -193,8 +193,8 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     if (this.state.state === GameState.Playing) {
       components.push(<Scores players={this.state.players} />);
       components.push(<Words words={this.state.words} />);
-      components.push(<Actions player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />);
     }
+    components.push(<Actions key="actions" player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} />);
 
     return (
       <IonPage>
