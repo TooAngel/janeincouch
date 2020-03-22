@@ -182,7 +182,6 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
           }
         }
         this.setState({players: players});
-
       });
     });
   }
