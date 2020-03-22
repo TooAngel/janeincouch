@@ -3,6 +3,7 @@ import { IonGrid, IonCol, IonRow } from '@ionic/react';
 import { Player as PlayerInterface } from '../interfaces/Player'
 import { Team } from '../interfaces/Team'
 import { Role } from '../interfaces/State'
+import './Players.css'
 
 import Player from '../components/Player';
 
@@ -36,16 +37,16 @@ class Players extends React.Component<PlayerProps, { }> {
     }
 
     return (
-      <IonGrid>
+      <IonGrid className="playergrid">
         {activePlayer}
         <IonRow>
           <IonCol>
-            <IonGrid>
+            <IonGrid className="playergrid">
               {allPlayers[Team.red]}
             </IonGrid>
           </IonCol>
           <IonCol>
-            <IonGrid>
+            <IonGrid className="playergrid">
               {allPlayers[Team.blue]}
             </IonGrid>
           </IonCol>
