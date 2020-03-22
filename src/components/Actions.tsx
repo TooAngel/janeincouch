@@ -4,50 +4,77 @@ import { closeCircleOutline, checkmarkCircleOutline } from 'ionicons/icons'
 
 import { Player } from '../interfaces/Player'
 import { Role } from '../interfaces/State'
+import { GameState } from '../interfaces/GameState'
 
 interface ActionsProps {
   player: Player;
   setPlayer(player: Player): void;
+  gameState: GameState;
+  startRound(): void;
 }
 
-const Actions: React.FC<ActionsProps> = (props) => {
+class Actions extends React.Component<ActionsProps, { }> {
 
-  function next(correct: boolean) {
-    let p = props.player;
+  constructor(props: ActionsProps) {
+    super(props);
+    this.next = this.next.bind(this);
+  }
+
+  next(correct: boolean) {
+    let p = this.props.player;
     if (correct) {
       p.score++
-      props.setPlayer(p);
+      this.props.setPlayer(p);
     }
 
-    console.log(props.player.score);
+    console.log(this.props.player.score);
   }
 
-  let right: any;
-  let wrong: any;
-  if (props.player.role === Role.explaining) {
-    right = (
-      <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => next(true)}>
-        Richtig
-        &nbsp;
-        <IonIcon color="light" icon={checkmarkCircleOutline} />
-      </IonButton>
-    )
-    wrong = (
-      <IonButton expand="block" size="large" fill="outline" color="danger" onClick={() => next(false)}>
-        <IonIcon color="danger" icon={closeCircleOutline} />
-        &nbsp;
-        Weiter
-      </IonButton>
-    )
+  render() {
+    let buttons = <></>;
+
+    if (this.props.gameState === GameState.Playing) {
+      let right: any;
+      let wrong: any;
+      if (this.props.player.role === Role.explaining) {
+        right = (
+          <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => this.next(true)}>
+          Richtig
+          &nbsp;
+          <IonIcon color="light" icon={checkmarkCircleOutline} />
+          </IonButton>
+        )
+        wrong = (
+          <IonButton expand="block" size="large" fill="outline" color="danger" onClick={() => this.next(false)}>
+          <IonIcon color="danger" icon={closeCircleOutline} />
+          &nbsp;
+          Weiter
+          </IonButton>
+        )
+        buttons = (<IonRow>
+          <IonCol>{wrong}</IonCol>
+          <IonCol>{right}</IonCol>
+        </IonRow>);
+      }
+    } else if (this.props.gameState === GameState.Waiting) {
+      if (this.props.player.leader) {
+        buttons = (<IonRow>
+          <IonCol>
+            <IonButton expand="block" size="large" fill="solid" color="success" onClick={() => this.props.startRound()}>
+              Start
+              &nbsp;
+              <IonIcon color="light" icon={checkmarkCircleOutline} />
+            </IonButton>
+          </IonCol>
+        </IonRow>);
+      }
+    }
+    return (
+      <IonGrid>
+        {buttons}
+      </IonGrid>
+    );
   }
-  return (
-    <IonGrid>
-      <IonRow>
-        <IonCol>{wrong}</IonCol>
-        <IonCol>{right}</IonCol>
-      </IonRow>
-    </IonGrid>
-  );
 };
 
 export default Actions;
