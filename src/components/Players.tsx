@@ -30,9 +30,6 @@ const Players: React.FC<PlayerProps> = (props) => {
       activePlayer = getPlayerPlayer(p, "12");
     }
 
-    if (Array.isArray(allPlayers[p.team]) === false) {
-        allPlayers[p.team] = [];
-    }
     allPlayers[p.team].push(getPlayerPlayer(p, "6"));
   }
 
