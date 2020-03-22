@@ -240,7 +240,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     components.push(<Players key="players" players={this.state.players} />)
     if (this.state.gameState === GameState.Playing) {
       // components.push(<Scores players={this.state.players} />);
-      components.push(<Words word={this.state.wordActive} />);
+      components.push(<Words key="words" word={this.state.wordActive} />);
     }
     components.push(<Actions key="actions" player={this.state.players[this.state.currentPlayerID]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound}/>);
 
