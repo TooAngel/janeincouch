@@ -21,7 +21,4 @@ if [ ! -z "$INPUT_WORKDIR" ]; then
   cd $INPUT_WORKDIR
 fi
 
-echo $HOME
-ls -al $HOME/
-
 exec "$@"
