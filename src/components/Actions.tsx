@@ -12,6 +12,8 @@ interface ActionsProps {
   gameState: GameState;
   startRound(): void;
   server: boolean;
+  wordGuessed(): void;
+  nextWord(): void;
 }
 
 class Actions extends React.Component<ActionsProps, { }> {
@@ -22,13 +24,11 @@ class Actions extends React.Component<ActionsProps, { }> {
   }
 
   next(correct: boolean) {
-    let p = this.props.player;
     if (correct) {
-      p.score++
-      this.props.setPlayer(p);
+      this.props.wordGuessed();
+    } else {
+      this.props.nextWord();
     }
-
-    console.log(this.props.player.score);
   }
 
   render() {

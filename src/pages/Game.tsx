@@ -48,6 +48,7 @@ class Game extends React.Component<GameProps, State> {
   stream: MediaStream | null;
   peerId: string | undefined;
   interval: number | undefined;
+  serverConnection: Peer.DataConnection | null;
 
   constructor(props: GameProps) {
     super(props);
@@ -55,6 +56,7 @@ class Game extends React.Component<GameProps, State> {
     this.stream = null;
     this.peerId = undefined;
     this.interval = undefined;
+    this.serverConnection = null;
     let server = false;
     if (this.props.match.params.leader) {
       this.peerId = this.props.match.params.id;
@@ -62,7 +64,7 @@ class Game extends React.Component<GameProps, State> {
     }
     this.state = {
       players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: this.peerId || '', srcObject: null, connection: null}],
-      words: ['hund', 'katze', 'maus', 'auto', 'mopped', 'rad', 'tisch', 'stuhl', 'lampe', 'baum', 'blume', 'strauch', 'fenster', 'tuer', 'decke', 'mond', 'sonne', 'sterne'],
+      words: ['Hund', 'Astronaut', 'Mopped', 'Sonnenblume', 'Schildkröte', 'Fahrrad', 'Gartenstuhl', 'Zauberei', 'Holzschrank', 'Drehbuch', 'Brillenputztuch', 'Coronaparty', 'Osterhase', 'Dusche', 'Flüssigseife', 'Alf', 'Prince', 'Sterne', 'Alpha'],
       wordActive: '',
       playerActive: 0,
       gameState: GameState.Waiting,
@@ -77,6 +79,8 @@ class Game extends React.Component<GameProps, State> {
     this.updateClients = this.updateClients.bind(this);
     this.startRound = this.startRound.bind(this);
     this.handleClientOpenPeer = this.handleClientOpenPeer.bind(this);
+    this.wordGuessed = this.wordGuessed.bind(this);
+    this.nextWord = this.nextWord.bind(this);
 
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: true});
     media.then((stream) => {
@@ -86,6 +90,45 @@ class Game extends React.Component<GameProps, State> {
       this.setState({players: players});
       this.initRTC();
     });
+  }
+
+  wordGuessed() {
+    if (this.state.server) {
+      const player = this.state.players[this.state.playerActive];
+      player.score += 1;
+      this.updateClients(this.state);
+      this.setState({players: this.state.players});
+    } else {
+      if (this.serverConnection === null) {
+        console.log('Why is serverConnection null?');
+        return;
+      }
+      this.serverConnection.send(JSON.stringify({action: 'guessed'}));
+    }
+  }
+
+  nextWord() {
+    if (this.state.server) {
+      const word = this.state.words[Math.floor(Math.random() * this.state.words.length)];
+      this.setState({wordActive: word});
+      const data = {
+        wordActive: word,
+        playerActive: this.state.playerActive,
+        gameState: this.state.gameState,
+        gameMode: this.state.gameMode,
+        timer: this.state.timer,
+        words: this.state.words,
+        players: this.state.players,
+        server: false,
+      };
+      this.updateClients(data);
+    } else {
+      if (this.serverConnection === null) {
+        console.log('Why is serverConnection null?');
+        return;
+      }
+      this.serverConnection.send(JSON.stringify({action: 'nextWord'}));
+    }
   }
 
   updateClients(config: State) {
@@ -129,19 +172,27 @@ class Game extends React.Component<GameProps, State> {
     // this.peer.on('open', () => {})
 
     this.peer.on('connection', (conn) => {
-      conn.on('data', () => {
-        this.state.players.push({
-          id: `${this.state.players.length}`,
-          team: this.state.players.length % 2,
-          role: Role.explaining,
-          leader: false,
-          score: 0,
-          peerId: conn.peer,
-          srcObject: null,
-          connection: conn,
-        });
-        this.setState({players: this.state.players});
-        this.updateClients(this.state);
+      conn.on('data', (message) => {
+        const data = JSON.parse(message);
+        if (data.action === 'init') {
+          console.log('init');
+          this.state.players.push({
+            id: `${this.state.players.length}`,
+            team: this.state.players.length % 2,
+            role: Role.explaining,
+            leader: false,
+            score: 0,
+            peerId: conn.peer,
+            srcObject: null,
+            connection: conn,
+          });
+          this.setState({players: this.state.players});
+          this.updateClients(this.state);
+        } else if (data.action === 'guessed') {
+          this.wordGuessed();
+        } else if (data.action === 'nextWord') {
+          this.nextWord();
+        }
       });
     });
     this.peer.on('close', function() { console.log('peer closed'); });
@@ -158,11 +209,15 @@ class Game extends React.Component<GameProps, State> {
       console.log('handleClient peer.on open this.peer = null, why?');
       return;
     }
-    var conn = this.peer.connect(this.props.match.params.id);
-    conn.on('open', () => {
-      conn.send(JSON.stringify({hello: true}));
+    this.serverConnection = this.peer.connect(this.props.match.params.id);
+    this.serverConnection.on('open', () => {
+      if (this.serverConnection === null) {
+        console.log('Why is serverConnection null?');
+        return;
+      }
+      this.serverConnection.send(JSON.stringify({action: 'init'}));
     })
-    conn.on('data', (data) => {
+    this.serverConnection.on('data', (data) => {
       const message = JSON.parse(data);
 
       const players: Player[] = message.players;
@@ -191,9 +246,10 @@ class Game extends React.Component<GameProps, State> {
         }
       }
       const state = message.state;
-      console.log(state.gameState, GameState.Playing);
       if (state.gameState === GameState.Playing) {
-        this.interval = window.setInterval(() => this.handleTimer(), 1000);
+        if (!this.interval) {
+          this.interval = window.setInterval(() => this.handleTimer(), 1000);
+        }
       }
       this.setState({
         players: players,
@@ -254,7 +310,11 @@ class Game extends React.Component<GameProps, State> {
         });
 
         call.on('close', function() {console.log('call close')});
-        call.on('error', function(err) {console.log('call error', err)});
+        call.on('error', (err) => {
+          console.log('call error', err);
+          const players = this.state.players.filter((player) => player.peerId !== call.peer);
+          this.setState({players: players});
+        });
       }
     });
   }
@@ -305,7 +365,7 @@ class Game extends React.Component<GameProps, State> {
     if ((this.state.gameState === GameState.Playing && this.state.players[this.state.playerActive].peerId === this.peerId) ||
         (this.state.gameState === GameState.Waiting && this.state.server)
     ) {
-      components.push(<Actions key="actions" player={this.state.players[this.state.playerActive]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound} server={this.state.server}/>);
+      components.push(<Actions key="actions" player={this.state.players[this.state.playerActive]} setPlayer={this.setPlayer} gameState={this.state.gameState} startRound={this.startRound} server={this.state.server} wordGuessed={this.wordGuessed} nextWord={this.nextWord} />);
     }
 
     return (
