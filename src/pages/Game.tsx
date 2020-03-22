@@ -75,7 +75,7 @@ class Game extends React.Component<GameProps, State> {
     this.startRound = this.startRound.bind(this);
     this.handleClientOpenPeer = this.handleClientOpenPeer.bind(this);
 
-    const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
+    const media = navigator.mediaDevices.getUserMedia({video: true, audio: true});
     media.then((stream) => {
       this.stream = stream;
       const players = this.state.players;
