@@ -16,7 +16,7 @@ interface PlayerProps {
   playerActive: number;
 }
 
-function getPlayerPlayer(p: PlayerInterface, active: boolean, size: string, muted: boolean, noVideo: boolean): any {
+function getPlayerPlayer(p: PlayerInterface, active: boolean, size: string, muted: boolean, noVideo: boolean, me: boolean): any {
   let className = "";
   if (active) {
     className = "active";
@@ -29,7 +29,7 @@ function getPlayerPlayer(p: PlayerInterface, active: boolean, size: string, mute
   return (
     <IonRow key={p.id + size} className={className}>
       <IonCol size={size}>
-        <Player player={p} muted={muted} noVideo={noVideo} />
+        <Player player={p} muted={muted} noVideo={noVideo} me={me} />
       </IonCol>
     </IonRow>
   );
@@ -45,10 +45,10 @@ class Players extends React.Component<PlayerProps, { }> {
       const player = this.props.players[playerIndex];
       const me = player.peerId === this.props.myPeerId;
       if (playerIndex === this.props.playerActive) {
-        activePlayer = getPlayerPlayer(player, true, '12', me || (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
-        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
+        activePlayer = getPlayerPlayer(player, true, '12', (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera, me);
+        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', false, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera, true));
       } else {
-        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', me, false));
+        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', me, false, me));
       }
     }
 

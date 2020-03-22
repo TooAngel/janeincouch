@@ -1,9 +1,26 @@
 video {
-  max-height: 90px;
   margin: 0 auto;
+  max-height: 90px;
   width: 100%;
 }
 
 .active video {
   max-height: 180px;
+}
+
+.muteicon {
+  position: relative;
+  top: 25%;
+  display: none;
+  margin: 0 auto -80px auto;
+  font-size: 400%;
+}
+
+.muted {
+  display: block;
+  filter: drop-shadow(16px 16px 10px black);
+}
+
+.hidden {
+  filter: grayscale(0.8) opacity(15%) blur(5px);
 }
