@@ -10,46 +10,49 @@ interface PlayerProps {
   players: PlayerInterface[];
 }
 
-const Players: React.FC<PlayerProps> = (props) => {
+function getPlayerPlayer(p: PlayerInterface, size: string): any {
+  return (
+    <IonRow key={p.id}>
+    <IonCol size={size}>
+    <Player player={p} />
+    </IonCol>
+    </IonRow>
+  );
+}
 
-  function getPlayerPlayer(p: PlayerInterface, size: string): any {
-    return (
-      <IonRow key={p.id}>
-        <IonCol size={size}>
-          <Player player={p} />
-        </IonCol>
-      </IonRow>
-    );
-  }
+class Players extends React.Component<PlayerProps, { }> {
 
-  let activePlayer = (<></>);
-  let allPlayers: PlayerInterface[][] = [[], []];
+  render() {
+    console.log('Players render', this.props.players);
+    let activePlayer = (<></>);
+    let allPlayers: PlayerInterface[][] = [[], []];
 
-  for (let p of props.players) {
-    if (p.role === Role.explaining) {
-      activePlayer = getPlayerPlayer(p, "12");
+    for (let p of this.props.players) {
+      if (p.role === Role.explaining) {
+        activePlayer = getPlayerPlayer(p, '12');
+      }
+
+      allPlayers[p.team].push(getPlayerPlayer(p, '6'));
     }
 
-    allPlayers[p.team].push(getPlayerPlayer(p, "6"));
+    return (
+      <IonGrid>
+        {activePlayer}
+        <IonRow>
+          <IonCol>
+            <IonGrid>
+              {allPlayers[Team.red]}
+            </IonGrid>
+          </IonCol>
+          <IonCol>
+            <IonGrid>
+              {allPlayers[Team.blue]}
+            </IonGrid>
+          </IonCol>
+        </IonRow>
+      </IonGrid>
+    );
   }
-
-  return (
-    <IonGrid>
-      {activePlayer}
-      <IonRow>
-        <IonCol>
-          <IonGrid>
-            {allPlayers[Team.red]}
-          </IonGrid>
-        </IonCol>
-        <IonCol>
-          <IonGrid>
-            {allPlayers[Team.blue]}
-          </IonGrid>
-        </IonCol>
-      </IonRow>
-    </IonGrid>
-  );
 };
 
 export default Players;
