@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    branches:
+    - "!*"  # do not run on any branches
+    tags:
+    - "v*"  # only run for tags starting with v
+
+jobs:
+  release:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+
+    # Docker login
+    - name: Docker login
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u "couchaellenge+github_actions" --password-stdin
+
+    # Pull image
+    - name: Pull image
+      run: |
+            set +e
+            while true
+            do
+                docker pull docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}} && break
+                sleep 15
+            done
+
+    - name: Retag image with the TAG version
+      run: |
+            export RELEASE_VERSION=$(echo $GITHUB_REF | sed -e "s#^refs/tags/##")
+            docker tag docker.pkg.github.com/tooangel/couchallenge/couchallenge:${{github.sha}} docker.pkg.github.com/tooangel/couchallenge/couchallenge:$RELEASE_VERSION
+
+    # Push release tag
+    - name: Push tag
+      run: |
+            export RELEASE_VERSION=$(echo $GITHUB_REF | sed -e "s#^refs/tags/##")
+            docker push docker.pkg.github.com/tooangel/couchallenge/couchallenge:$RELEASE_VERSION
