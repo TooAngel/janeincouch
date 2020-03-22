@@ -29,19 +29,21 @@ interface GameProps {
 }
 
 class Game extends React.Component<GameProps, { currentPlayerID: number, players: Player[], words: string[], wordActive: string, gameState: GameState, streamAvailable: boolean, playerActive: number, gameMode: GameMode.NoSound}> {
-  peer: Peer;
+  peer: Peer | null;
   stream: MediaStream | null;
+  peerId: string | undefined;
 
   constructor(props: GameProps) {
     super(props);
+    this.peer = null;
     this.stream = null;
-    let peerId = undefined;
+    this.peerId = undefined;
     if (this.props.match.params.leader) {
-      peerId = this.props.match.params.id;
+      this.peerId = this.props.match.params.id;
     }
     this.state = {
       currentPlayerID: 0,
-      players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: peerId || '', srcObject: null, connection: null}],
+      players: [{id: '0', team: Team.red, role: Role.explaining, leader: true, score: 0, peerId: this.peerId || '', srcObject: null, connection: null}],
       words: ['hund', 'katze', 'mause', 'auto', 'mopped', 'rad', 'tische', 'stuhl', 'lample', 'baum', 'blume', 'strauch', 'fenster', 'tuer', 'decke', 'mond', 'sonne', 'sterne'],
       wordActive: '',
       playerActive: 0,
@@ -55,6 +57,7 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     this.handleClient = this.handleClient.bind(this);
     this.updateClients = this.updateClients.bind(this);
     this.startRound = this.startRound.bind(this);
+    this.handleClientOpenPeer = this.handleClientOpenPeer.bind(this);
 
     const media = navigator.mediaDevices.getUserMedia({video: true, audio: false});
     media.then((stream) => {
@@ -62,15 +65,8 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
       this.state.players[0].srcObject = this.stream;
       this.setState({players: this.state.players});
       this.setState({streamAvailable: true});
+      this.initRTC();
     });
-    this.peer = new Peer(peerId, {
-      host: 'peer.couchallenge.de',
-      port: 9000,
-      path: '/myapp',
-      key: 'cccccc',
-    });
-    console.log('peer id', this.peer.id);
-    this.initRTC();
   }
 
   updateClients() {
@@ -97,6 +93,12 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
   }
 
   handleServer() {
+    this.peer = new Peer(this.peerId, {
+      host: 'peer.couchallenge.de',
+      port: 9000,
+      path: '/myapp',
+      key: 'cccccc',
+    });
     this.peer.on('open', (id) => {
       console.log('server on open', id);
     })
@@ -121,56 +123,86 @@ class Game extends React.Component<GameProps, { currentPlayerID: number, players
     });
   }
 
-  handleClient() {
+  handleClientOpenPeer(id: string) {
+    if (id === null) {
+      console.log('handleClientOpenPeer peer.on open id = null, why?');
+      return;
+    }
     let currentPlayerID = this.state.currentPlayerID;
-    this.peer.on('open', (id) => {
-      var conn = this.peer.connect(this.props.match.params.id);
-      conn.on('open', () => {
-        console.log('client on open', id);
-        conn.send(JSON.stringify({hello: true}));
-      })
-      conn.on('data', (data) => {
-        console.log('client on data', data);
-        const message = JSON.parse(data);
-        const players: Player[] = message.players;
-        for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
-          const player = players[playerIndex];
-          const oldPlayer = this.state.players.find(element => element.peerId === player.peerId && !!element.srcObject);
-          if (oldPlayer) {
-            console.log('oldPlayer found', player, oldPlayer);
-            player.srcObject = oldPlayer.srcObject;
-            continue;
-          }
 
-          if (player.peerId === id) {
-            console.log('call it is me');
-            currentPlayerID = playerIndex;
-            player.srcObject = this.stream;
-            continue;
-          }
-
-          if (this.stream) {
-            const call = this.peer.call(player.peerId, this.stream);
-            call.on('stream', (remoteStream) => {
-              console.log('call out on stream', remoteStream);
-              player.srcObject = remoteStream;
-              this.setState({players: players});
-            });
-          }
+    if (this.peer === null) {
+      console.log('handleClient peer.on open this.peer = null, why?');
+      return;
+    }
+    var conn = this.peer.connect(this.props.match.params.id);
+    conn.on('open', () => {
+      console.log('client on open', id);
+      conn.send(JSON.stringify({hello: true}));
+    })
+    conn.on('data', (data) => {
+      console.log('client on data', data);
+      const message = JSON.parse(data);
+      const players: Player[] = message.players;
+      for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
+        const player = players[playerIndex];
+        const oldPlayer = this.state.players.find(element => element.peerId === player.peerId && !!element.srcObject);
+        if (oldPlayer) {
+          console.log('oldPlayer found', player, oldPlayer);
+          player.srcObject = oldPlayer.srcObject;
+          continue;
         }
-        this.setState({players: players, currentPlayerID: currentPlayerID});
-      });
+
+        if (player.peerId === id) {
+          console.log('call it is me');
+          currentPlayerID = playerIndex;
+          player.srcObject = this.stream;
+          continue;
+        }
+
+        if (this.stream) {
+          if (this.peer === null) {
+            console.log('handleClient peer.on data this.peer = null, why?');
+            return;
+          }
+          const call = this.peer.call(player.peerId, this.stream);
+          call.on('stream', (remoteStream) => {
+            console.log('call out on stream', remoteStream);
+            player.srcObject = remoteStream;
+            this.setState({players: players});
+          });
+        }
+      }
+      this.setState({players: players, currentPlayerID: currentPlayerID});
+    });
+  }
+
+  handleClient() {
+    console.log('handle client');
+
+    this.peer = new Peer(this.peerId, {
+      host: 'peer.couchallenge.de',
+      port: 9000,
+      path: '/myapp',
+      key: 'cccccc',
+    });
+    console.log('peer id', this.peer.id);
+    this.peer.on('open', (id) => {
+      this.handleClientOpenPeer(id);
     });
   }
 
   initRTC() {
     console.log('init rtc', this.props.match.params.leader);
+
     if (this.props.match.params.leader) {
       this.handleServer();
     } else {
       this.handleClient();
     }
-
+    if (this.peer === null) {
+      console.log('handleClient this.peer = null, why?');
+      return;
+    }
     this.peer.on('call', (call) => {
       console.log('call', call);
       if (this.stream) {
