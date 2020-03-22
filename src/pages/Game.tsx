@@ -14,6 +14,7 @@ import Actions from '../components/Actions';
 import Players from '../components/Players';
 // import Scores from '../components/Scores';
 import Words from '../components/Words';
+import Title from '../components/Title';
 
 interface Params {
   id: string;
@@ -116,8 +117,6 @@ class Game extends React.Component<GameProps, State> {
     if (window.location.protocol === "https:") {
       port = 9002;
     }
-    // TODO not yet working
-    port = 9000;
     this.peer = new Peer(this.peerId, {
       host: 'peer.couchallenge.de',
       port: port,
@@ -218,8 +217,6 @@ class Game extends React.Component<GameProps, State> {
     if (window.location.protocol === "https:") {
       port = 9002;
     }
-    // TODO not yet working
-    port = 9000;
 
     this.peer = new Peer(this.peerId, {
       host: 'peer.couchallenge.de',
@@ -312,7 +309,7 @@ class Game extends React.Component<GameProps, State> {
       <IonPage>
         <IonHeader>
           <IonToolbar>
-            <IonTitle>GameID {this.props.match.params.id} {this.state.wordActive} {this.state.playerActive} {this.state.gameState === 0 ? 'Waiting' : 'Playing'} {this.state.gameMode === 0 ? 'No Sound' : 'No Camera'} {this.state.timer}</IonTitle>
+            <Title gameId={this.props.match.params.id} wordActive={this.state.wordActive} playerActive={this.state.playerActive} gameState={this.state.gameState} gameMode={this.state.gameMode} timer={this.state.timer} />
           </IonToolbar>
         </IonHeader>
         <IonContent>
