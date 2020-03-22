@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      - couchallenge-test.planethold.de
+      - test.couchallenge.de
       secretName: couchallenge-tls
   rules:
-  - host: couchallenge-test.planethold.de
+  - host: test.couchallenge.de
     http:
       paths:
       - backend:
