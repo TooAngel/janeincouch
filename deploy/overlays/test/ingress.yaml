@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      - test.couchallenge.de
+      - www.couchallenge.de
       secretName: couchallenge-tls
   rules:
-  - host: test.couchallenge.de
+  - host: www.couchallenge.de
     http:
       paths:
       - backend:
