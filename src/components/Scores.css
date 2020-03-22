@@ -1,0 +1,22 @@
+.teamicon,
+.teamscore {
+  font-size: 250%;
+  padding: 8px;
+  text-align: center;
+}
+
+.text-align-left {
+  text-align: left;
+}
+
+.text-align-right {
+  text-align: right;
+}
+
+.winning {
+  text-decoration: underline;
+}
+
+.losing {
+  text-decoration: none;
+}

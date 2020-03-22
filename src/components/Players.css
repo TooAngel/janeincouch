@@ -2,6 +2,5 @@ ion-grid.playergrid,
 .playergrid ion-grid,
 .playergrid ion-row,
 .playergrid ion-col {
-  background-color: #020202;
   padding: 0;
 }

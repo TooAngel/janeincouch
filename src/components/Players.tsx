@@ -16,12 +16,21 @@ interface PlayerProps {
   playerActive: number;
 }
 
-function getPlayerPlayer(p: PlayerInterface, size: string, muted: boolean, noVideo: boolean): any {
+function getPlayerPlayer(p: PlayerInterface, active: boolean, size: string, muted: boolean, noVideo: boolean): any {
+  let className = "";
+  if (active) {
+    className = "active";
+  }
+  if (p.team === Team.blue) {
+    className += " teamblue";
+  } else {
+    className += " teamred";
+  }
   return (
-    <IonRow key={p.id + size}>
-    <IonCol size={size}>
-    <Player player={p} muted={muted} noVideo={noVideo} />
-    </IonCol>
+    <IonRow key={p.id + size} className={className}>
+      <IonCol size={size}>
+        <Player player={p} muted={muted} noVideo={noVideo} />
+      </IonCol>
     </IonRow>
   );
 }
@@ -37,10 +46,10 @@ class Players extends React.Component<PlayerProps, { }> {
       const player = this.props.players[playerIndex];
       const me = player.peerId === this.props.myPeerId;
       if (playerIndex === this.props.playerActive) {
-        activePlayer = getPlayerPlayer(player, '12', me || (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
-        allPlayers[player.team].push(getPlayerPlayer(player, '6', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
+        activePlayer = getPlayerPlayer(player, true, '12', me || (this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoSound), this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera);
+        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', true, this.props.gameState === GameState.Playing && this.props.gameMode === GameMode.NoCamera));
       } else {
-        allPlayers[player.team].push(getPlayerPlayer(player, '6', me, false));
+        allPlayers[player.team].push(getPlayerPlayer(player, false, '12', me, false));
       }
     }
 
