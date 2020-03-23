@@ -96,8 +96,19 @@ class Game extends React.Component<GameProps, State> {
     if (this.state.server) {
       const player = this.state.players[this.state.playerActive];
       player.score += 1;
-      this.updateClients(this.state);
-      this.setState({players: this.state.players});
+      const word = this.state.words[Math.floor(Math.random() * this.state.words.length)];
+      this.setState({players: this.state.players, wordActive: word});
+      const data = {
+        wordActive: word,
+        playerActive: this.state.playerActive,
+        gameState: this.state.gameState,
+        gameMode: this.state.gameMode,
+        timer: this.state.timer,
+        words: this.state.words,
+        players: this.state.players,
+        server: false,
+      };
+      this.updateClients(data);
     } else {
       if (this.serverConnection === null) {
         console.log('Why is serverConnection null?');

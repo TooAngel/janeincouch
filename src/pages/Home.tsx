@@ -16,7 +16,8 @@ const Home: React.FC = () => {
         <img src="/assets/logo.svg" alt="logo" width="100%" />
         <CreateGame />
         <JoinGame />
-        <a href="/assets/apk/couchallenge.apk">android apk</a>
+        <a href="https://github.com/TooAngel/couchallenge"><img src="/assets/github.svg" alt="github" width="50px" /></a>
+        <a href="https://discord.gg/dQkFVQm"><img src="/assets/Discord-Logo-Black.svg" alt="discord" width="50px" /></a>
       </IonContent>
     </IonPage>
   );
