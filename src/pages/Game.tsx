@@ -262,6 +262,12 @@ class Game extends React.Component<GameProps, State> {
           this.interval = window.setInterval(() => this.handleTimer(), 1000);
         }
       }
+      if (state.gameState === GameState.Waiting) {
+        if (this.interval) {
+          clearInterval(this.interval);
+          this.interval = undefined;
+        }
+      }
       this.setState({
         players: players,
         wordActive: state.wordActive,
@@ -341,6 +347,7 @@ class Game extends React.Component<GameProps, State> {
     if (timer <= 0) {
       this.setState({gameState: GameState.Waiting, timer: timer});
       clearInterval(this.interval);
+      this.interval = undefined;
     } else {
       this.setState({timer: timer});
     }

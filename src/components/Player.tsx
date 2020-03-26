@@ -8,7 +8,7 @@ interface PlayerProps {
   player: PlayerInterface;
   muted: boolean;
   noVideo: boolean;
-  me: boolean;
+  mutedIcon: boolean;
 }
 
 class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix: number }> {
@@ -28,6 +28,8 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
       return true;
     }
     if (this.props.muted !== nextProps.muted) {
+      return true;
+    } else if (this.props.mutedIcon !== nextProps.mutedIcon) {
       return true;
     } else if (this.props.noVideo !== nextProps.noVideo) {
       return true;
@@ -64,13 +66,13 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
     }
 
     let muteIconClassName = "muteicon";
-    if (this.props.muted) {
+    if (this.props.mutedIcon) {
       muteIconClassName += " muted";
     }
     return (
       <>
         <IonIcon className={muteIconClassName} color="warning" icon={volumeMuteOutline} />
-        <video className={videoClassName} id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.me || this.props.muted} poster="/assets/logo.svg" autoPlay></video>
+        <video className={videoClassName} id={`player${this.props.player.id + this.state.postFix}`} muted={this.props.muted} poster="/assets/logo.svg" autoPlay></video>
       </>
     );
   }
