@@ -164,7 +164,7 @@ class Game extends React.Component<GameProps, State> {
       if (!player.connection) {
         continue;
       }
-
+      console.log('Send to player', player);
       player.connection.send(message);
     }
   }
@@ -221,40 +221,48 @@ class Game extends React.Component<GameProps, State> {
       return;
     }
     this.serverConnection = this.peer.connect(this.props.match.params.id);
-    this.serverConnection.on('open', () => {
-      if (this.serverConnection === null) {
-        console.log('Why is serverConnection null?');
-        return;
-      }
+    this.serverConnection.on('error', (err) => {console.log('peerConnection error', err);});
+    console.log(this.serverConnection.open);
+    if (this.serverConnection.open) {
+      console.log('is already open');
       this.serverConnection.send(JSON.stringify({action: 'init'}));
-    })
+    }
     this.serverConnection.on('data', (data) => {
+      console.log('receive data');
       const message = JSON.parse(data);
 
       const players: Player[] = message.players;
+      console.log('my id', id);
       for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
         const player = players[playerIndex];
+        console.log(player.id, player.peerId, player.srcObject);
         const oldPlayer = this.state.players.find(element => element.peerId === player.peerId && !!element.srcObject);
         if (oldPlayer) {
+          console.log('oldPlayer found');
           player.srcObject = oldPlayer.srcObject;
           continue;
         }
 
         if (player.peerId === id) {
+          console.log('me found');
           player.srcObject = this.stream;
           continue;
         }
 
         if (this.stream) {
+          console.log('call player');
           if (this.peer === null) {
             return;
           }
           const call = this.peer.call(player.peerId, this.stream);
           call.on('stream', (remoteStream) => {
+            console.log('call connected');
+            console.log(player.id, player.peerId, player.srcObject);
             player.srcObject = remoteStream;
             this.setState({players: players});
           });
         }
+        this.setState({players: players});
       }
       const state = message.state;
       if (state.gameState === GameState.Playing) {
@@ -277,6 +285,15 @@ class Game extends React.Component<GameProps, State> {
         timer: state.timer
       });
     });
+
+    this.serverConnection.on('open', () => {
+      if (this.serverConnection === null) {
+        console.log('Why is serverConnection null?');
+        return;
+      }
+      console.log('send init');
+      this.serverConnection.send(JSON.stringify({action: 'init'}));
+    })
   }
 
   handleClient() {
@@ -293,14 +310,23 @@ class Game extends React.Component<GameProps, State> {
       path: '/myapp',
       key: 'cccccc',
     });
+    console.log(this.peer);
     this.peer.on('open', (id) => {
+      console.log('peer open', id);
       this.peerId = id;
       this.handleClientOpenPeer(id);
     });
 
     this.peer.on('close', function() { console.log('peer closed'); });
     this.peer.on('disconnected', function() { console.log('peer disconnected'); });
-    this.peer.on('error', function(err) { console.log('peer error', err); });
+    this.peer.on('error', function(err) {
+      console.log('peer error');
+      console.log(err);
+    });
+    this.peer.reconnect();
+    if (this.peer.id) {
+      this.handleClientOpenPeer(this.peer.id);
+    }
   }
 
   initRTC() {

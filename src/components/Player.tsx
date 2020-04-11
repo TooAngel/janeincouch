@@ -17,7 +17,7 @@ class Player extends React.Component<PlayerProps, {videoLoaded: boolean, postFix
     super(props);
     this.state = {
       videoLoaded: false,
-      postFix: Math.floor(Math.random() * 100),
+      postFix: Math.floor(Math.random() * 100000),
     }
   }
 
